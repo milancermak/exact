@@ -45,6 +45,7 @@ mod ambient;
 mod build;
 mod diff;
 mod migrate;
+mod structural;
 mod tamber;
 mod tamber_contract;
 mod tamber_explain;
@@ -72,6 +73,9 @@ fn usage() -> String {
   {build}
   contract migrate <file.contract>
   contract symbols <file.contract> [--stdin] [--name <exact-name>]
+  contract inspect <file.contract> [--component <name>] [--tag <tag>] [--has <attr> …] [--where 'attr=expression' …] [--match <text> …] [--context] [--json]
+  contract edit <file.contract> [--component <name>] [--tag <tag>] [--has <attr> …] [--where 'attr=expression' …] --match <text> --set|--or|--and 'name=expression'|--unset <name>|--text <plain-text> [--match …] [--apply] [--json] [--diagnostics]
+  contract edit <file.contract> --stdin [--apply] [--json] [--diagnostics]
   contract sources <file.contract>
   contract fmt [--check | --stdout] <file.contract>
   contract fmt --uses <file.contract>
@@ -113,6 +117,8 @@ fn run() -> ExitCode {
         Some("build") => build::run(&args[1..]),
         Some("migrate") => migrate::run(&args[1..]),
         Some("symbols") => symbols(&args[1..]),
+        Some("inspect") => structural::inspect(&args[1..]),
+        Some("edit") => structural::edit(&args[1..]),
         Some("sources") => sources(&args[1..]),
         Some("fmt") => fmt(&args[1..]),
         Some("test") => tests(&args[1..]),

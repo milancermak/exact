@@ -361,7 +361,7 @@ artifacts under game/target only. Ports none. Runs to completion.`,
     example: 'bun exact.mjs game vocab Follow',
   },
   contract: {
-    line: 'the Contract compiler: build, types, vocab, fmt, symbols …',
+    line: 'the Contract compiler: build, inspect, edit, types, vocab …',
     usage: 'bun exact.mjs contract <subcommand> …      (paths from where you run it)',
     common: ['contract build <file> --json · contract vocab <name>…    diagnostics · any tag, property, colour role or recipe (no name: the card)'],
     flags: [],
@@ -371,6 +371,17 @@ artifacts under game/target only. Ports none. Runs to completion.`,
                                           --surface terminal: a plan the terminal host runs, to measure a GUI
                                           source there; what a terminal entry refuses is a warning
                                           app.contract: app.ts type-checked too, as every host's build does
+  inspect <file.contract> [--component <name>] [--tag <tag>] [--match <text>]… [--has <attr>]… [--where 'attr=expression']… [--context] [--json]
+                                          compact authored headers; --json includes interfaces and handles
+                                          repeated --match: literal case-sensitive OR, deduplicated in source order
+                                          one compact limit of 20 nodes; --component and --tag apply to every term
+                                          --has and --where combine with AND; --where compares authored tokens
+                                          --context: bounded declared bindings/signatures for matched components
+  edit <file.contract> [--component <name>] [--tag <tag>] [--has <attr>]… [--where 'attr=expression']… --match <text> --set 'name=expression'|--unset <name>|--or 'name=expression'|--and 'name=expression'|--text <plain-text> [--match …] [--apply] [--json] [--diagnostics]
+  edit <file.contract> --stdin [--apply] [--json] [--diagnostics]
+                                          preview by default; validates the graph and preserves other source
+                                          --tag: match descendants too; --or/--and extend an existing expression
+                                          --text: plain content replaces one existing text literal or direct button label
   types <file.contract> [-o <app.d.ts>]   the types app.ts imports (build app.contract, test, web refresh them)
   vocab [--json] [--all] [<name> …]       no name: the card, what an app writes, in one read (--all: every
                                           tag, attribute, CSS property and function); each name's entry in

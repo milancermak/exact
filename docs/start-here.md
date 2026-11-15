@@ -2,6 +2,9 @@
 
 The only required reading; the rest is lookup. A website reads [Start here: a website with Exact](start-here-site.md) instead.
 
+Editing an existing Contract app? The [short editing guide](contract-editing-onboarding.md)
+covers syntax, source discovery and validation.
+
 ## The idea
 
 1. **Write the web, ship the platform.** Layout and names are CSS's and HTML's (flex, gap,

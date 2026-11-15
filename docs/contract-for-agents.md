@@ -4,6 +4,8 @@
 > only that page, and a [recipe](recipes/) answers most questions after it. Open this
 > guide at a section for what no recipe covers, or grep it; don't read it front to back.
 
+For changes to an existing app, use the short [Contract editing onboarding](contract-editing-onboarding.md).
+
 Use this guide to author, change, inspect, and verify a current Exact application.
 It covers the language implemented on `main` on 2026-10-02. Use the [human guide](contract-for-humans.md)
 for explanations and complete examples, and the [grammar reference](contract-grammar.md)
@@ -5106,6 +5108,115 @@ keyed by its digest. Use it only for
 the accepted generation it describes. The driver can connect layout to the
 original declaration, component call sites, and winning style attribute.
 Production artifacts do not need a development source map.
+
+### Structural source editing
+
+Use `edit` directly when a unique authored identifier or visible label and the
+replacement are known. It preserves untouched source; rereading other attributes
+or earlier accepted diffs is unnecessary. Batch independent changes in one call.
+Keep selectors and bindings learned earlier in the conversation.
+
+When discovery is needed, use scoped `inspect` instead of broad source windows.
+Both commands already return JSON. Default inspection returns compact headers,
+at most 20 nodes, with `total` and `more`. Reserve `--json` for full interfaces,
+attributes, ranges and snapshot handles. Add `--context` only when binding
+information is needed. With no selector, inspection lists components and counts.
+`--tag button` matches its own header or descendant text, including its visible
+label; this works for edits too.
+
+Combine `--component`, `--tag`, `--has` and `--where` to narrow one selection.
+Each `--has ATTR` requires that authored attribute. Each
+`--where 'ATTR=expression'` requires its complete authored expression to match.
+All attribute conditions use AND. Comparison ignores token whitespace, comments
+and equivalent string escapes, but preserves string contents and parentheses.
+It does not evaluate expressions: `disabled=busy` does not match `disabled=true`.
+Bare `autofocus` has the value `true`. Implicit compiler-added attributes do not
+satisfy these filters.
+
+Repeat `--match` to inspect a case-sensitive, literal OR union, deduplicated in
+source order under one shared output limit. `--component` and `--tag` appear once
+and apply globally; repeat `--has` and `--where` for additional AND conditions.
+
+`--context` adds binding information for components owning the selected nodes:
+props, injected values, states, derived values, resources, mutations and action
+signatures. Types are declared types where available; `null` means unknown.
+Initializers are omitted. Context includes at most four components and 32 members
+per component, balanced across member kinds, with omission counts. An empty
+selection has empty context and no suggested matches.
+
+```sh
+bun exact.mjs contract inspect app.contract
+bun exact.mjs contract inspect app.contract --component Editor --tag button --match 'Save draft'
+bun exact.mjs contract inspect app.contract --tag button --has disabled --where 'role="tab"' --context
+bun exact.mjs contract edit app.contract --match 'testId="save"' --set 'disabled=busy' --apply
+bun exact.mjs contract edit app.contract --tag button --match 'Save draft' --text 'Save changes' --apply
+```
+
+When a task provides neither an exact identifier nor a unique visible label,
+discover its authored anchor first. A descriptive name can differ from a `testId`.
+`contract vocab <name>` gives the accepted tag or attribute spelling; Contract
+uses `link` for links and `aria-label` for accessible labels.
+
+Direct edits select one authored element per `--match`. Its following operations
+belong to that element; another `--match` starts a new
+group in the same atomic batch. A missing or ambiguous selection refuses before
+writing. Prefer a whole `testId="value"` attribute when its value is known.
+Component, tag and attribute filters apply to every edit group in that command.
+Use the exact Contract attribute spelling, such as `aria-label`, `testId` or
+`retainFocus`. Values are ordinary Contract expressions. Omit `--apply` to preview.
+
+`--or 'disabled=busy'` extends an existing `disabled` expression with `or`;
+`--and` uses `and`. The tool reads and parenthesizes both expressions, so the
+caller can add a condition without reading or rewriting the current value.
+The attribute must already exist. Combine new conditions into one operation
+per attribute. The JSON equivalents are `or-attr` and `and-attr`, with `target`,
+`name` and `value` as for `set-attr`.
+Use `--set` to add or replace an attribute. A compact header can omit attributes
+on continuation lines; use detailed inspection when their presence matters.
+
+`--text 'Save changes'` takes plain text, not a Contract expression. It replaces
+one existing quoted literal in a `text` node or a button's single direct label.
+Computed text, templates and missing or ambiguous labels refuse without writing.
+It can share an atomic batch with attribute edits. It replaces the whole literal;
+inspect first when a partial-copy request must preserve wording not yet known.
+
+Both forms preserve unrelated source bytes and run the build's compilation,
+surface and ambient-API checks before writing. The receipt includes the actual
+diff, final revision and validation status. It summarizes warnings; `--diagnostics`
+includes their details. A successful applied receipt validates that revision:
+no extra build or inspection is needed merely to repeat the check. A later source
+modification needs fresh validation. Handles expire after their source changes.
+An app wrapper's build can also refresh generated TypeScript types and check
+`app.ts`; the edit receipt covers Contract validation, so run those additional
+checks when affected.
+
+A stale revision, overlapping edits or a compiler error leaves the source alone.
+Compilation refusals include the original matched headers in `error.candidates`
+so a caller can correct an expression or attribute name without another lookup.
+
+This version edits the named root file's element attributes and literal text.
+Imported files, shape migrations and moving subtrees remain ordinary source edits.
+Compilation checks the program; exercise behavior changes on the app as usual.
+
+### Snapshot-bound source editing
+
+For precise programmatic edits, `inspect --json` provides the source `revision`,
+node and attribute handles. Pass this object to `edit app.contract --stdin`:
+
+```json
+{
+  "revision": "<revision from inspect>",
+  "edits": [
+    {"op": "set-attr", "target": "<button handle>", "name": "disabled", "value": "busy"},
+    {"op": "set-text", "target": "<text or button handle>", "value": "Save changes"}
+  ]
+}
+```
+
+`set-text` takes a plain JSON string. The attribute operations are `set-attr`,
+`remove-attr`, `or-attr` and `and-attr`. Existing component-call prop values also
+accept `replace-expr`; adding or removing those props is outside this version.
+Both command forms use the same atomic compilation and source-preservation checks.
 
 ### The driver's operations
 
